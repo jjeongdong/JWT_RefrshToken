@@ -1,6 +1,6 @@
 package com.example.springsecurity_jwt.jwt;
 
-import com.example.springsecurity_jwt.CustomUserDetailService;
+import com.example.springsecurity_jwt.service.CustomUserDetailService;
 import com.example.springsecurity_jwt.entity.Authority;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

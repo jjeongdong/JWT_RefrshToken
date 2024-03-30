@@ -1,4 +1,4 @@
-package com.example.springsecurity_jwt;
+package com.example.springsecurity_jwt.service;
 
 import com.example.springsecurity_jwt.dto.CustomUserDetails;
 import com.example.springsecurity_jwt.entity.Member;
