@@ -22,7 +22,7 @@ public class SignResponse {
 
     private List<Authority> roles = new ArrayList<>();
 
-    private String token;
+    private TokenResponse token;
 
     public SignResponse(Member member) {
         this.id = member.getId();

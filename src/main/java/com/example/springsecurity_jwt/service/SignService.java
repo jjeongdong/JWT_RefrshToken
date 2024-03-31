@@ -1,17 +1,20 @@
 package com.example.springsecurity_jwt.service;
 
-import com.example.springsecurity_jwt.dto.RegisterRequest;
-import com.example.springsecurity_jwt.dto.SignRequest;
-import com.example.springsecurity_jwt.dto.SignResponse;
+import com.example.springsecurity_jwt.util.SecurityUtil;
+import com.example.springsecurity_jwt.dto.*;
 import com.example.springsecurity_jwt.entity.Authority;
 import com.example.springsecurity_jwt.entity.Member;
 import com.example.springsecurity_jwt.jwt.JwtProvider;
+import com.example.springsecurity_jwt.redis.RefreshToken;
+import com.example.springsecurity_jwt.redis.RefreshTokenRepository;
 import com.example.springsecurity_jwt.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 
@@ -20,6 +23,7 @@ import java.util.Collections;
 public class SignService {
 
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
@@ -36,9 +40,25 @@ public class SignService {
                 .id(member.getId())
                 .username(member.getUsername())
                 .roles(member.getRoles())
-                .token(jwtProvider.createToken(member.getUsername(), member.getRoles()))
+                .token(TokenResponse.builder()
+                        .accessToken(jwtProvider.createAccessToken(member.getUsername(), member.getRoles()))
+                        .refreshToken(jwtProvider.createRefreshToken(member.getUsername()))
+                        .build())
                 .build();
+    }
 
+    public TokenResponse reissue(TokenRequest request) {
+        RefreshToken DBrefreshToken = refreshTokenRepository.findById(request.getRefreshToken())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Member member = memberRepository.findById(DBrefreshToken.getMemberId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+
+        return TokenResponse.builder()
+                .accessToken(jwtProvider.createAccessToken(member.getUsername(), member.getRoles()))
+                .refreshToken(request.getRefreshToken())
+                .build();
     }
 
     @Transactional
@@ -60,10 +80,12 @@ public class SignService {
     }
 
     @Transactional(readOnly = true)
-    public SignResponse getMember(String username) throws Exception {
+    public SignResponse getMember() throws Exception {
+        String username = SecurityUtil.getCurrentMemberId();
+
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new Exception("계정을 찾을 수 없습니다."));
+
         return new SignResponse(member);
     }
-
 }

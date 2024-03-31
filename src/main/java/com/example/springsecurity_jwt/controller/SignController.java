@@ -1,12 +1,12 @@
 package com.example.springsecurity_jwt.controller;
 
-import com.example.springsecurity_jwt.dto.RegisterRequest;
-import com.example.springsecurity_jwt.dto.SignRequest;
-import com.example.springsecurity_jwt.dto.SignResponse;
+import com.example.springsecurity_jwt.dto.*;
+import com.example.springsecurity_jwt.redis.RefreshToken;
 import com.example.springsecurity_jwt.service.SignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,13 +25,18 @@ public class SignController {
         return new ResponseEntity<>(memberService.register(request), HttpStatus.OK);
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<TokenResponse> reissue(@RequestBody TokenRequest request) {
+        return new ResponseEntity<>(memberService.reissue(request), HttpStatus.OK);
+    }
+
     @GetMapping("/user/get")
-    public ResponseEntity<SignResponse> getMember(@RequestParam String username) throws Exception {
-        return new ResponseEntity<>( memberService.getMember(username), HttpStatus.OK);
+    public ResponseEntity<SignResponse> getMember() throws Exception {
+        return new ResponseEntity<>(memberService.getMember(), HttpStatus.OK);
     }
 
     @GetMapping("/admin/get")
-    public ResponseEntity<SignResponse> getMemberForAdmin(@RequestParam String username) throws Exception {
-        return new ResponseEntity<>( memberService.getMember(username), HttpStatus.OK);
+    public ResponseEntity<SignResponse> getMemberForAdmin() throws Exception {
+        return new ResponseEntity<>(memberService.getMember(), HttpStatus.OK);
     }
 }

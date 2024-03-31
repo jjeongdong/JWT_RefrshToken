@@ -1,5 +1,8 @@
 package com.example.springsecurity_jwt.jwt;
 
+import com.example.springsecurity_jwt.redis.RefreshToken;
+import com.example.springsecurity_jwt.redis.RefreshTokenRepository;
+import com.example.springsecurity_jwt.repository.MemberRepository;
 import com.example.springsecurity_jwt.service.CustomUserDetailService;
 import com.example.springsecurity_jwt.entity.Authority;
 import io.jsonwebtoken.Claims;
@@ -8,6 +11,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
@@ -27,21 +32,19 @@ public class JwtProvider {
 
     @Value("${jwt.secret.key}")
     private String salt;
-
     private Key secretKey;
-
-    // 만료시간 : 1Hour
     private final long exp = 1000L * 60 * 60;
-
     private final CustomUserDetailService userDetailsService;
+    private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @PostConstruct
     protected void init() {
         secretKey = Keys.hmacShaKeyFor(salt.getBytes(StandardCharsets.UTF_8));
     }
 
-    // 토큰 생성
-    public String createToken(String username, List<Authority> roles) {
+    // Access Token 생성
+    public String createAccessToken(String username, List<Authority> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", roles);
         Date now = new Date();
@@ -52,6 +55,20 @@ public class JwtProvider {
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+
+    // Refresh Token 생성
+    public String createRefreshToken(String username) {
+        Long memberId = memberRepository.findByUsername(username)
+                .orElseThrow(EntityNotFoundException::new).getId();
+
+        String randomId = UUID.randomUUID().toString();
+        RefreshToken refreshToken = new RefreshToken(randomId, memberId);
+        refreshTokenRepository.save(refreshToken);
+
+        return randomId;
+    }
+
 
     // 권한정보 획득
     // Spring Security 인증과정에서 권한확인을 위한 기능
