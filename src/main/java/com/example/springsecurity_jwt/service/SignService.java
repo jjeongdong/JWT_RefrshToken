@@ -1,5 +1,6 @@
 package com.example.springsecurity_jwt.service;
 
+import com.example.springsecurity_jwt.dto.RegisterRequest;
 import com.example.springsecurity_jwt.dto.SignRequest;
 import com.example.springsecurity_jwt.dto.SignResponse;
 import com.example.springsecurity_jwt.entity.Authority;
@@ -15,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class SignService {
 
@@ -42,7 +42,7 @@ public class SignService {
     }
 
     @Transactional
-    public boolean register(SignRequest request) throws Exception {
+    public boolean register(RegisterRequest request) throws Exception {
         try {
             Member member = Member.builder()
                     .username(request.getUsername())

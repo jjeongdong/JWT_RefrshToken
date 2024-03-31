@@ -1,8 +1,8 @@
 package com.example.springsecurity_jwt.controller;
 
+import com.example.springsecurity_jwt.dto.RegisterRequest;
 import com.example.springsecurity_jwt.dto.SignRequest;
 import com.example.springsecurity_jwt.dto.SignResponse;
-import com.example.springsecurity_jwt.repository.MemberRepository;
 import com.example.springsecurity_jwt.service.SignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,13 +15,13 @@ public class SignController {
 
     private final SignService memberService;
 
-    @PostMapping(value = "/login")
+    @PostMapping("/login")
     public ResponseEntity<SignResponse> login(@RequestBody SignRequest request) {
         return new ResponseEntity<>(memberService.login(request), HttpStatus.OK);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Boolean> register(@RequestBody SignRequest request) throws Exception {
+    public ResponseEntity<Boolean> register(@RequestBody RegisterRequest request) throws Exception {
         return new ResponseEntity<>(memberService.register(request), HttpStatus.OK);
     }
 
